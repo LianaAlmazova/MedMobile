@@ -1,4 +1,4 @@
-package com.medapp
+package com.anonymous.MedApp
 
 import android.os.Build
 import android.os.Bundle

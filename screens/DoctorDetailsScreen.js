@@ -1,21 +1,71 @@
-import React from 'react';
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { doc, getDoc } from 'firebase/firestore';
+import db from '../constants/firebaseConfig'; // Убедитесь, что путь к firebaseConfig правильный
+import { Image } from 'react-native';
+
 
 export default function DoctorDetailsScreen({ route, navigation }) {
-  const { doctor } = route.params;
+  const { doctorId } = route.params; // Используем переданный ID врача
+  const [doctor, setDoctor] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const handleBookAppointment = () => {
-    // Переход на экран записи на приём
-    navigation.navigate('AppointmentBooking', { doctor });
+  // Функция для загрузки данных врача
+  const fetchDoctorDetails = async () => {
+    try {
+      const docRef = doc(db, 'doctors', doctorId); // Подставляем ID врача
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        setDoctor(docSnap.data()); // Сохраняем данные врача
+      } else {
+        console.error('Документ не найден!');
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки данных врача:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    fetchDoctorDetails();
+  }, []);
+
+  const handleBookAppointment = () => {
+    navigation.navigate('AppointmentBooking', { doctorId });
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#40E0D0" />
+      </View>
+    );
+  }
+
+  if (!doctor) {
+    return (
+      <View style={styles.container}>
+        <Text>Ошибка: Врач не найден.</Text>
+      </View>
+    );
+  }
+
+  console.log("Врач:", doctor)
   return (
     <View style={styles.container}>
       <View style={styles.photoContainer}>
-        <Text>Photo</Text>
+        <Image
+            source={{ uri: doctor.photoUrl }} // Используем URL из базы данных
+            style={styles.photo} // Добавим стиль для изображения
+            resizeMode="cover" // Это обеспечит корректное отображение изображения
+          />
       </View>
       <Text style={styles.doctorName}>{doctor.name}</Text>
-      <Text style={styles.doctorDetails}>Специализация, стаж, образование, опыт работы</Text>
+      <Text style={styles.doctorDetails}>
+        {`Специализация: ${doctor.specialization}\nСтаж: ${doctor.experience}`}
+      </Text>
       <TouchableOpacity style={styles.button} onPress={handleBookAppointment}>
         <Text style={styles.buttonText}>Записаться на приём</Text>
       </TouchableOpacity>
@@ -29,11 +79,6 @@ const styles = StyleSheet.create({
     padding: 20,
     backgroundColor: '#f0f0f0',
   },
-  backButton: {
-    fontSize: 16,
-    color: '#007AFF',
-    marginBottom: 20,
-  },
   photoContainer: {
     width: 150,
     height: 150,
@@ -42,6 +87,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: 10,
     marginBottom: 20,
+  },
+  photo: {
+    width: '100%', // Заполняет контейнер полностью
+    height: '100%',
+    borderRadius: 10, // Закругленные углы
   },
   doctorName: {
     fontSize: 24,

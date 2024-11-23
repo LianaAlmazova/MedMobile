@@ -1,4 +1,4 @@
-package com.medapp
+package com.anonymous.MedApp
 
 import android.app.Application
 import android.content.res.Configuration
