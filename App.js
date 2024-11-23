@@ -3,6 +3,7 @@ import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import db from "./constants/firebaseConfig"
 import LoginScreen from './screens/LoginScreen';
 import OTPScreen from './screens/OTPScreen';
 import NewsScreen from './screens/NewsScreen';
@@ -15,6 +16,8 @@ import EditPatientInfoScreen from './screens/EditPatientInfoScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+console.log('Firebase Initialized:', db);
 
 function RecordsStack() {
   return (
